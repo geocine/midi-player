@@ -12,7 +12,9 @@ npx http-server . -p 8080 -c-1
 
 Then open http://localhost:8080
 
-To deploy, just upload the folder to any static host (e.g. Netlify) — no build step needed.
+## Deploy (Netlify)
+
+The repo includes a `netlify.toml` — connect the repository to Netlify (or drag-and-drop the folder in the Netlify UI) and it deploys as-is: no build step, publish directory is the root. The config also sets the right MIME type for `.mid` files, caches them for a week, and keeps `data/playlist.json` always fresh so newly added songs show up immediately.
 
 ## Add songs
 
@@ -25,13 +27,13 @@ To deploy, just upload the folder to any static host (e.g. Netlify) — no build
   "tracks": [
     {
       "title": "Life Goes On",
-      "artist": "BTS",
+      "artist": "방탄소년단 (BTS)",
       "file": "midi/life-goes-on.mid"
     },
     {
-      "title": "Another Song",
-      "artist": "Someone",
-      "file": "midi/another-song.mid"
+      "title": "First Love (Cover)",
+      "artist": "김채원 (Chaewon Kim)",
+      "file": "midi/first-love.mid"
     }
   ]
 }
@@ -46,7 +48,10 @@ To deploy, just upload the folder to any static host (e.g. Netlify) — no build
 - `js/app.js` – entry point
 - `js/playlist.js` – loads the playlist JSON
 - `js/player.js` – playlist rendering and playback control
+- `js/controls.js` – custom transport UI (play/pause, seek, time)
+- `js/visualizer.js` – note-driven waveform visualizer
 - `data/playlist.json` – your playlist
 - `midi/` – your MIDI files
+- `netlify.toml` – Netlify deploy config (headers, caching)
 
 Playback uses [html-midi-player](https://github.com/cifkao/html-midi-player) (Magenta + Tone.js) with a soundfont, loaded from a CDN.

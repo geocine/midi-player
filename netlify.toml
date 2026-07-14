@@ -1,0 +1,23 @@
+# Netlify configuration for the MIDI player static site.
+# No build step — the repository root is published as-is.
+
+[build]
+  publish = "."
+
+# Correct MIME type for MIDI files (not in Netlify's defaults)
+[[headers]]
+  for = "/midi/*"
+  [headers.values]
+    Content-Type = "audio/midi"
+
+# Long-lived caching for static assets; MIDI files rarely change
+[[headers]]
+  for = "/midi/*.mid"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+# Always revalidate the playlist so new songs show up immediately
+[[headers]]
+  for = "/data/playlist.json"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"

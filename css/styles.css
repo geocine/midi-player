@@ -22,7 +22,7 @@
 
   --radius-sm: 2px;
   --transition-fast: 150ms ease;
-  --player-bar-height: 128px;
+  --player-bar-height: 140px;
 }
 
 * {
@@ -150,58 +150,168 @@ main {
   padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
 }
 
+/* Transport row: shuffle / prev / play / next / repeat, centered */
+.transport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin-bottom: -5px;
+  transition: opacity 200ms ease;
+}
+
+/* Dimmed while press-hold scrubbing the wave */
+.transport.dimmed {
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+/* Visualizer doubles as the seek bar; times and title overlay it */
+.wave-line {
+  position: relative;
+  height: 52px;
+}
+
+.visualizer {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  touch-action: none;
+}
+
+/* Overlaid on the wave, vertically centered on its axis */
+.status-line {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.time,
 .now-playing {
-  margin-bottom: 10px;
+  /* Backdrop keeps text readable over the wave bars */
+  background: color-mix(in srgb, var(--color-surface) 85%, transparent);
+  padding: 2px 4px;
+}
+
+.time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  min-width: 34px;
+}
+
+.time:last-of-type {
+  text-align: right;
+}
+
+/* Title sits below the wave axis and fades out after a few seconds;
+   it reappears on play/pause/prev/next (not on scrub). */
+.now-playing {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  min-width: 0;
+  max-width: 70%;
+  text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 0.8rem;
-  text-align: center;
+  opacity: 0;
+  transition: opacity 400ms ease;
 }
 
-.now-playing .muted {
-  font-family: var(--font-sans);
+.now-playing.visible {
+  opacity: 1;
 }
 
-.controls {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.skip-btn {
-  flex-shrink: 0;
+.icon-btn,
+.play-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
   padding: 0;
-  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  background: var(--zinc-900);
-  color: var(--zinc-400);
   cursor: pointer;
-  transition: color var(--transition-fast), border-color var(--transition-fast);
+  transition: color var(--transition-fast), background-color var(--transition-fast);
 }
 
-.skip-btn:hover,
-.skip-btn:active {
+/* Bare icon buttons, Spotify-style — only the play button gets a square */
+.icon-btn {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: none;
+  color: var(--zinc-400);
+}
+
+.icon-btn:hover,
+.icon-btn:active {
   color: var(--zinc-white);
-  border-color: var(--zinc-600);
 }
 
-midi-player {
+.icon-btn.active {
+  color: var(--zinc-white);
+}
+
+/* Small "1" badge shown in repeat-one mode */
+.repeat-one-badge {
+  display: none;
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 1px 2px;
+  background: var(--zinc-white);
+  color: var(--zinc-black);
+  border-radius: var(--radius-sm);
+}
+
+.icon-btn[data-mode='one'] .repeat-one-badge {
   display: block;
-  flex: 1;
-  min-width: 0;
-  /* Hidden until js/player-theme.js injects the dark theme into its
-     shadow DOM, so the default light "pill" UI never flashes on load.
-     min-height reserves the space to avoid a layout jump. */
-  visibility: hidden;
-  min-height: 46px;
 }
 
-midi-player.themed {
-  visibility: visible;
+.play-btn {
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: var(--zinc-white);
+  color: var(--zinc-black);
+}
+
+.play-btn:hover:not(:disabled) {
+  background: var(--zinc-200);
+}
+
+.play-btn:disabled {
+  background: var(--zinc-900);
+  color: var(--zinc-600);
+  cursor: default;
+}
+
+.play-btn .icon-pause {
+  display: none;
+}
+
+.play-btn.playing .icon-pause {
+  display: block;
+}
+
+.play-btn.playing .icon-play {
+  display: none;
+}
+
+/* Headless engine — custom UI above replaces its built-in controls */
+midi-player {
+  display: none;
 }

@@ -1,5 +1,27 @@
-export function createPlayerController({ playerEl, listEl, titleEl, prevBtn, nextBtn, tracks }) {
+const REPEAT_MODES = ['off', 'all', 'one'];
+
+export function createPlayerController({
+  playerEl,
+  listEl,
+  titleEl,
+  prevBtn,
+  nextBtn,
+  shuffleBtn,
+  repeatBtn,
+  tracks,
+}) {
   let currentIndex = -1;
+  let shuffle = false;
+  let repeat = 'off';
+
+  function randomOtherIndex() {
+    if (tracks.length < 2) return currentIndex;
+    let index;
+    do {
+      index = Math.floor(Math.random() * tracks.length);
+    } while (index === currentIndex);
+    return index;
+  }
 
   function renderList() {
     listEl.innerHTML = '';
@@ -45,7 +67,7 @@ export function createPlayerController({ playerEl, listEl, titleEl, prevBtn, nex
 
   function next() {
     if (!tracks.length) return;
-    selectTrack((currentIndex + 1) % tracks.length);
+    selectTrack(shuffle ? randomOtherIndex() : (currentIndex + 1) % tracks.length);
   }
 
   function prev() {
@@ -58,6 +80,22 @@ export function createPlayerController({ playerEl, listEl, titleEl, prevBtn, nex
     }
   }
 
+  function toggleShuffle() {
+    shuffle = !shuffle;
+    shuffleBtn.classList.toggle('active', shuffle);
+    shuffleBtn.setAttribute('aria-pressed', String(shuffle));
+  }
+
+  function cycleRepeat() {
+    repeat = REPEAT_MODES[(REPEAT_MODES.indexOf(repeat) + 1) % REPEAT_MODES.length];
+    repeatBtn.classList.toggle('active', repeat !== 'off');
+    repeatBtn.dataset.mode = repeat;
+    repeatBtn.setAttribute(
+      'aria-label',
+      repeat === 'one' ? 'Repeat one' : repeat === 'all' ? 'Repeat all' : 'Repeat'
+    );
+  }
+
   function highlightCurrent() {
     listEl.querySelectorAll('.track').forEach((li) => {
       li.classList.toggle('active', Number(li.dataset.index) === currentIndex);
@@ -66,11 +104,23 @@ export function createPlayerController({ playerEl, listEl, titleEl, prevBtn, nex
 
   prevBtn.addEventListener('click', prev);
   nextBtn.addEventListener('click', next);
+  shuffleBtn.addEventListener('click', toggleShuffle);
+  repeatBtn.addEventListener('click', cycleRepeat);
 
-  // Auto-advance to the next track when the current one finishes.
+  // When a track finishes: repeat-one replays it, otherwise advance
+  // (shuffled if enabled); at the end of the list, repeat-all wraps
+  // around and off stops.
   playerEl.addEventListener('stop', (event) => {
-    if (event.detail?.finished && currentIndex < tracks.length - 1) {
+    if (!event.detail?.finished) return;
+
+    if (repeat === 'one') {
+      selectTrack(currentIndex);
+    } else if (shuffle) {
+      selectTrack(randomOtherIndex());
+    } else if (currentIndex < tracks.length - 1) {
       selectTrack(currentIndex + 1);
+    } else if (repeat === 'all') {
+      selectTrack(0);
     }
   });
 

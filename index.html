@@ -18,18 +18,37 @@
   </main>
 
   <footer class="player-bar">
-    <div class="now-playing">
-      <span id="now-playing-title" class="muted">Select a song</span>
-    </div>
-    <div class="controls">
-      <button id="prev-btn" class="skip-btn" type="button" aria-label="Previous song">
+    <div class="transport">
+      <button id="shuffle-btn" class="icon-btn" type="button" aria-label="Shuffle" aria-pressed="false">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M10.59 9.17 5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
+      </button>
+      <button id="prev-btn" class="icon-btn" type="button" aria-label="Previous song">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
       </button>
-      <midi-player id="player" sound-font></midi-player>
-      <button id="next-btn" class="skip-btn" type="button" aria-label="Next song">
+      <button id="play-btn" class="play-btn" type="button" disabled aria-label="Play">
+        <svg class="icon-play" viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        <svg class="icon-pause" viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
+      </button>
+      <button id="next-btn" class="icon-btn" type="button" aria-label="Next song">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M16 6h2v12h-2zm-1.5 6L6 18V6z"/></svg>
       </button>
+      <button id="repeat-btn" class="icon-btn" type="button" aria-label="Repeat" data-mode="off">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
+        <span class="repeat-one-badge" aria-hidden="true">1</span>
+      </button>
     </div>
+    <!-- Visualizer doubles as the seek bar (tap or drag to scrub);
+         times and title overlay it, lined up with the wave -->
+    <div class="wave-line">
+      <canvas id="visualizer" class="visualizer" aria-label="Seek"></canvas>
+      <div class="status-line">
+        <span id="time-current" class="time">0:00</span>
+        <span id="now-playing-title" class="now-playing muted">Select a song</span>
+        <span id="time-total" class="time">0:00</span>
+      </div>
+    </div>
+    <!-- Headless playback engine; UI above is custom -->
+    <midi-player id="player" sound-font></midi-player>
   </footer>
 
   <!-- html-midi-player + dependencies -->
