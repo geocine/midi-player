@@ -5,6 +5,7 @@
 
 const BAR_COUNT = 64;
 const DECAY = 0.965;
+const FRAME_INTERVAL = 30;
 // Most music lives well inside the full 21-108 MIDI range; a narrower
 // window spreads the notes across more bars.
 const MIN_PITCH = 30;
@@ -17,17 +18,28 @@ export function createVisualizer({ canvas, playerEl }) {
   const bars = new Float32Array(BAR_COUNT);
   let rafId = null;
   let scrubbing = false;
+  let resumeAfterScrub = false;
+  let width = 0;
+  let height = 0;
+  let lastDrawTime = 0;
 
   function resize() {
     const dpr = window.devicePixelRatio || 1;
-    const { width, height } = canvas.getBoundingClientRect();
+    ({ width, height } = canvas.getBoundingClientRect());
     canvas.width = Math.round(width * dpr);
     canvas.height = Math.round(height * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
-  function draw() {
-    const { width, height } = canvas.getBoundingClientRect();
+  function draw(timestamp) {
+    // MIDI scheduling also runs on the main thread. Thirty visual frames per
+    // second keeps the animation smooth without competing for every frame.
+    if (lastDrawTime && timestamp - lastDrawTime < FRAME_INTERVAL) {
+      rafId = requestAnimationFrame(draw);
+      return;
+    }
+    lastDrawTime = timestamp;
+
     ctx.clearRect(0, 0, width, height);
 
     const progress = playerEl.duration ? playerEl.currentTime / playerEl.duration : 0;
@@ -54,7 +66,8 @@ export function createVisualizer({ canvas, playerEl }) {
       }
       ctx.fillRect(x, centerY - barHeight / 2, barWidth, barHeight);
 
-      bars[i] *= DECAY;
+      // Account for rendering at half the display refresh rate.
+      bars[i] *= DECAY * DECAY;
     }
 
     // Playhead line — kept short and centered on the wave axis so it
@@ -69,6 +82,7 @@ export function createVisualizer({ canvas, playerEl }) {
       rafId = requestAnimationFrame(draw);
     } else {
       rafId = null;
+      lastDrawTime = 0;
     }
   }
 
@@ -107,14 +121,37 @@ export function createVisualizer({ canvas, playerEl }) {
   function seekFromEvent(event) {
     if (!playerEl.duration) return;
     const rect = canvas.getBoundingClientRect();
+    if (!rect.width) return;
     const fraction = Math.min(Math.max((event.clientX - rect.left) / rect.width, 0), 1);
     playerEl.currentTime = fraction * playerEl.duration;
+    ensureRunning();
+  }
+
+  function finishScrubbing(event) {
+    if (!scrubbing) return;
+
+    // Capture normally gives us the final pointer position even when the drag
+    // ends outside the canvas. Commit it before playback is resumed.
+    if (event?.clientX != null) seekFromEvent(event);
+
+    scrubbing = false;
+    const shouldResume = resumeAfterScrub && playerEl.currentTime < playerEl.duration;
+    resumeAfterScrub = false;
+
+    if (shouldResume) playerEl.start();
     ensureRunning();
   }
 
   canvas.addEventListener('pointerdown', (event) => {
     if (!playerEl.duration) return;
     scrubbing = true;
+    resumeAfterScrub = playerEl.playing;
+
+    // html-midi-player seeks its scheduler immediately whenever currentTime is
+    // changed during playback. Stop it while dragging so rapid pointermove
+    // events cannot leave overlapping or stale notes queued.
+    if (resumeAfterScrub) playerEl.stop();
+
     canvas.setPointerCapture(event.pointerId);
     seekFromEvent(event);
   });
@@ -123,13 +160,9 @@ export function createVisualizer({ canvas, playerEl }) {
     if (scrubbing) seekFromEvent(event);
   });
 
-  canvas.addEventListener('pointerup', () => {
-    scrubbing = false;
-  });
-
-  canvas.addEventListener('pointercancel', () => {
-    scrubbing = false;
-  });
+  canvas.addEventListener('pointerup', finishScrubbing);
+  canvas.addEventListener('pointercancel', finishScrubbing);
+  canvas.addEventListener('lostpointercapture', finishScrubbing);
 
   window.addEventListener('resize', () => {
     resize();
@@ -137,5 +170,5 @@ export function createVisualizer({ canvas, playerEl }) {
   });
 
   resize();
-  draw();
+  ensureRunning();
 }

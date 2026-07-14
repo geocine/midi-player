@@ -1,7 +1,7 @@
 // Service worker: precaches the app shell and runtime-caches songs and
 // CDN dependencies so the player keeps working offline.
 
-const CACHE_NAME = 'midi-player-v1';
+const CACHE_NAME = 'midi-player-v2';
 
 const SHELL = [
   './',
@@ -46,8 +46,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Everything else (shell, MIDI files, CDN scripts, soundfont samples):
-  // cache-first with background refresh into the runtime cache.
+  // Refresh the app code in the background so an installed PWA does not keep
+  // running an old player indefinitely. Large MIDI/CDN/soundfont assets remain
+  // cache-first to avoid unnecessary downloads and playback startup work.
+  if (url.origin === self.location.origin && !url.pathname.includes('/midi/')) {
+    event.respondWith(staleWhileRevalidate(request, event));
+    return;
+  }
+
   event.respondWith(cacheFirst(request));
 });
 
@@ -75,4 +81,20 @@ async function cacheFirst(request) {
     cache.put(request, response.clone());
   }
   return response;
+}
+
+function staleWhileRevalidate(request, event) {
+  const cachePromise = caches.open(CACHE_NAME);
+  const refresh = cachePromise.then((cache) =>
+    fetch(request).then((response) => {
+      if (!response.ok) return response;
+      return cache.put(request, response.clone()).then(() => response);
+    })
+  );
+
+  // Register the background work synchronously while the fetch event is live.
+  event.waitUntil(refresh.catch(() => undefined));
+  return cachePromise
+    .then((cache) => cache.match(request))
+    .then((cached) => cached || refresh);
 }
