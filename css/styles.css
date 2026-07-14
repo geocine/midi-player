@@ -1,0 +1,207 @@
+:root {
+  /* Zinc palette */
+  --zinc-black: #000000;
+  --zinc-950: #09090b;
+  --zinc-900: #18181b;
+  --zinc-800: #27272a;
+  --zinc-700: #3f3f46;
+  --zinc-600: #52525b;
+  --zinc-500: #71717a;
+  --zinc-400: #a1a1aa;
+  --zinc-200: #e4e4e7;
+  --zinc-white: #ffffff;
+
+  --color-bg: var(--zinc-black);
+  --color-surface: var(--zinc-950);
+  --color-border: var(--zinc-800);
+  --color-text: var(--zinc-200);
+  --color-text-secondary: var(--zinc-500);
+
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+
+  --radius-sm: 2px;
+  --transition-fast: 150ms ease;
+  --player-bar-height: 128px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  background: var(--color-bg);
+  color: var(--color-text);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Header */
+.app-header {
+  padding: 28px 20px 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.muted {
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  margin: 6px 0 0;
+}
+
+main {
+  padding: 0 0 calc(var(--player-bar-height) + env(safe-area-inset-bottom) + 24px);
+}
+
+/* Playlist */
+.playlist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.track {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.track-button {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 14px 20px;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.track-button:hover,
+.track-button:active {
+  background: var(--zinc-900);
+}
+
+.track-number {
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  min-width: 1.4em;
+}
+
+.track-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.track-title {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track-artist {
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track.active .track-title {
+  color: var(--zinc-white);
+  font-weight: 700;
+}
+
+.track.active .track-number {
+  color: var(--zinc-white);
+}
+
+.track.active .track-status::before {
+  content: '♪';
+  color: var(--zinc-white);
+  font-size: 0.8rem;
+}
+
+/* Player bar */
+.player-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+}
+
+.now-playing {
+  margin-bottom: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.now-playing .muted {
+  font-family: var(--font-sans);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.skip-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--zinc-900);
+  color: var(--zinc-400);
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.skip-btn:hover,
+.skip-btn:active {
+  color: var(--zinc-white);
+  border-color: var(--zinc-600);
+}
+
+midi-player {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  /* Hidden until js/player-theme.js injects the dark theme into its
+     shadow DOM, so the default light "pill" UI never flashes on load.
+     min-height reserves the space to avoid a layout jump. */
+  visibility: hidden;
+  min-height: 46px;
+}
+
+midi-player.themed {
+  visibility: visible;
+}

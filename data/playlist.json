@@ -1,0 +1,15 @@
+{
+  "name": "Geocine's Playlist",
+  "tracks": [
+    {
+      "title": "Life Goes On",
+      "artist": "방탄소년단 (BTS)",
+      "file": "midi/life-goes-on.mid"
+    },
+    {
+      "title": "First Love (Cover)",
+      "artist": "김채원 (Chaewon Kim)",
+      "file": "midi/first-love.mid"
+    }
+  ]
+}
