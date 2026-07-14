@@ -9,6 +9,7 @@ export function createPlayerController({
   shuffleBtn,
   repeatBtn,
   tracks,
+  unlockAudio,
 }) {
   let currentIndex = -1;
   let shuffle = false;
@@ -41,7 +42,7 @@ export function createPlayerController({
         </span>
         <span class="track-status" aria-hidden="true"></span>
       `;
-      button.addEventListener('click', () => selectTrack(index));
+      button.addEventListener('click', () => selectTrackFromGesture(index));
 
       li.appendChild(button);
       listEl.appendChild(li);
@@ -62,6 +63,17 @@ export function createPlayerController({
     if (autoplay) {
       // Play once the MIDI file has loaded.
       playerEl.addEventListener('load', () => playerEl.start(), { once: true });
+    }
+  }
+
+  async function selectTrackFromGesture(index) {
+    try {
+      // Unlock before changing src: loading is asynchronous and would otherwise
+      // move start() outside the user gesture on iOS Safari.
+      await unlockAudio();
+      selectTrack(index);
+    } catch (error) {
+      console.error('Could not start audio:', error);
     }
   }
 
@@ -102,8 +114,22 @@ export function createPlayerController({
     });
   }
 
-  prevBtn.addEventListener('click', prev);
-  nextBtn.addEventListener('click', next);
+  prevBtn.addEventListener('click', async () => {
+    try {
+      await unlockAudio();
+      prev();
+    } catch (error) {
+      console.error('Could not start audio:', error);
+    }
+  });
+  nextBtn.addEventListener('click', async () => {
+    try {
+      await unlockAudio();
+      next();
+    } catch (error) {
+      console.error('Could not start audio:', error);
+    }
+  });
   shuffleBtn.addEventListener('click', toggleShuffle);
   repeatBtn.addEventListener('click', cycleRepeat);
 

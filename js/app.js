@@ -3,6 +3,16 @@ import { createPlayerController } from './player.js';
 import { createTransport } from './controls.js';
 import { createVisualizer } from './visualizer.js';
 
+// Mobile Safari requires Web Audio to be unlocked directly from a user
+// interaction. Calling Tone.start() before any asynchronous track loading keeps
+// later playback from being rejected as autoplay.
+async function unlockAudio() {
+  if (!window.Tone?.start) {
+    throw new Error('Tone.js failed to load');
+  }
+  await window.Tone.start();
+}
+
 async function init() {
   const playerEl = document.getElementById('player');
 
@@ -21,6 +31,7 @@ async function init() {
     shuffleBtn: document.getElementById('shuffle-btn'),
     repeatBtn: document.getElementById('repeat-btn'),
     tracks: playlist.tracks,
+    unlockAudio,
   });
 
   controller.renderList();
@@ -30,6 +41,7 @@ async function init() {
     playBtn: document.getElementById('play-btn'),
     timeCurrentEl: document.getElementById('time-current'),
     timeTotalEl: document.getElementById('time-total'),
+    unlockAudio,
   });
 
   createVisualizer({

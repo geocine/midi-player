@@ -1,7 +1,7 @@
 // Service worker: precaches the app shell and runtime-caches songs and
 // CDN dependencies so the player keeps working offline.
 
-const CACHE_NAME = 'midi-player-v2';
+const CACHE_NAME = 'midi-player-v3';
 
 const SHELL = [
   './',

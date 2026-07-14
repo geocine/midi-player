@@ -2,7 +2,13 @@
 // midi-player engine. stop() keeps the position and start() resumes
 // from currentTime, so stop/start acts as pause/resume.
 
-export function createTransport({ playerEl, playBtn, timeCurrentEl, timeTotalEl }) {
+export function createTransport({
+  playerEl,
+  playBtn,
+  timeCurrentEl,
+  timeTotalEl,
+  unlockAudio,
+}) {
   let tickId = null;
 
   function formatTime(seconds) {
@@ -29,11 +35,17 @@ export function createTransport({ playerEl, playBtn, timeCurrentEl, timeTotalEl 
     }
   }
 
-  playBtn.addEventListener('click', () => {
+  playBtn.addEventListener('click', async () => {
     if (playerEl.playing) {
       playerEl.stop();
     } else {
-      playerEl.start();
+      try {
+        // This must run in the click handler so iOS permits Web Audio output.
+        await unlockAudio();
+        playerEl.start();
+      } catch (error) {
+        console.error('Could not start audio:', error);
+      }
     }
   });
 
