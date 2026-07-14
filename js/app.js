@@ -90,3 +90,12 @@ init().catch((err) => {
   document.getElementById('now-playing-title').textContent = 'Failed to load playlist';
   console.error(err);
 });
+
+// PWA: offline support via service worker (no-op during local file dev).
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch((err) => {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}

@@ -21,3 +21,9 @@
   for = "/data/playlist.json"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
+
+# The service worker must never be cached, or updates would be delayed
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
