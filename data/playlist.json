@@ -7,9 +7,19 @@
       "file": "midi/life-goes-on.mid"
     },
     {
-      "title": "First Love (Cover)",
+      "title": "First Love - 宇多田ヒカル (Utada Hikaru)",
       "artist": "김채원 (Chaewon Kim)",
       "file": "midi/first-love.mid"
+    },
+    {
+      "title": "Merry Go Round",
+      "artist": "방탄소년단 (BTS)",
+      "file": "midi/merry-go-round.mid"
+    },
+    {
+      "title": "Seven (feat. Latto)",
+      "artist": "전정국 (BTJeon Jung-kook)",
+      "file": "midi/seven.mid"
     }
   ]
 }
